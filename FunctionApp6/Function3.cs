@@ -11,9 +11,9 @@ using System.Diagnostics;
 using System.IO;
 using System;
 
-namespace FunctionApp6
+namespace FunctionApp
 {
-    public static class Function3
+    public static class BlobFunc
     {
         [FunctionName("HttpTriggerCSharp")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)

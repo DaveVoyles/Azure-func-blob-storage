@@ -9,7 +9,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-namespace FunctionApp6
+namespace FunctionApp
 {
     #region Sample Use
     /********************************************************************************
