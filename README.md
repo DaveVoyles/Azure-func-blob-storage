@@ -18,10 +18,13 @@ In AzureBlobManager.cs, set your:
 
 This is done by making an HTTP POST request. Inside the body of the message, we want to pass in JSON content, with a key/value pair like this:
 
+```json
 {
     "name" : "AddressOfTheImage"
 }
+```
 
+This takes the name of the image, pre-pends the current date, and saves the image to blob storage. 
 
   [1]: http://www.daveVoyles.com "My website"
 
