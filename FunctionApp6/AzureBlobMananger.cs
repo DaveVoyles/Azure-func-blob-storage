@@ -74,19 +74,35 @@ namespace FunctionApp
             /// <summary>
             /// The root top level container in Azure blob.
             /// Rename as appropriate for your system.
+            /// NOTE: MUST be --lower case--, otherwise Azure returns a 400 error
             /// </summary>
-            public const string ROOT_CONTAINER_NAME = "toplevelcontainer";
-            #endregion Public Constants
+            public const string ROOT_CONTAINER_NAME = "container";
 
-            #region Private Members
+            /// <summary>
+            ///  Grab file name from file & append the date.
+            ///  Later on we'll use this to search for containers within a week and return those w/ images
+            /// </summary>
+            /// <param name="name">Name from the file POSTed</param>
+            public static string GenerateNameForContainer()
+            {
+                string containerName = ROOT_CONTAINER_NAME;
+                string currentTime   = DateTime.Now.ToString("-yy-M-dd");
+                string newName       = containerName + currentTime;
 
-            private CloudBlobClient _blobClient;
+                return newName;
+            }
+
+        #endregion Public Constants
+
+        #region Private Members
+
+        private CloudBlobClient _blobClient;
             private string _containerName;
             private string _blobName;
             private string _directoryName;
-            private static string _key = "PrVUPAQSKHMXJTvRiUq8dMomIau6TsJFKCEy+Ml45Ayd7JjNR90x8eFL7cyxqUKj1jFUxYv642wraPYc9k6zgw==";
-            private static string _name = "dvgraphstore";
-            private static string connString = "DefaultEndpointsProtocol=https;AccountName=dvgraphstore;AccountKey=PrVUPAQSKHMXJTvRiUq8dMomIau6TsJFKCEy+Ml45Ayd7JjNR90x8eFL7cyxqUKj1jFUxYv642wraPYc9k6zgw==;";
+            private static string _key;
+            private static string _name;
+        private static string connString;
 
             //To initialize the default storage credentials if none are provided. 
             //For now we're going to assume everything is going to this blob storage.

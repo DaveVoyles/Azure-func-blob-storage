@@ -44,9 +44,9 @@ namespace FunctionApp
         {
             string newName = GenerateNameFromFile(name);
 
-            AzureBlobManager abm = new AzureBlobManager();
-            abm.ContainerName = AzureBlobManager.ROOT_CONTAINER_NAME;
-            abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
+            AzureBlobManager abm               = new AzureBlobManager();
+                             abm.ContainerName = AzureBlobManager.GenerateNameForContainer();
+                             abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
 
             //Check if the Container Exists. If it does.....
             // TODO: Consider creating a new contanier for each day
@@ -89,10 +89,9 @@ namespace FunctionApp
         private static string GenerateNameFromFile(string name)
         {
             // Get file name from the url
-            string fileName = Path.GetFileName(name);
-
-            string currentTime = DateTime.Now.ToString("yyyy-dd-M-HH-");
-            string newName = currentTime + fileName;
+            string fileName    = Path.GetFileName(name);
+            string currentTime = DateTime.Now.ToString("yy-M-dd-HH-");
+            string newName     = currentTime + fileName;
 
             return newName;
         }
