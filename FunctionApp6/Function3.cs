@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.WindowsAzure.Storage; // Namespace for CloudStorageAccount
-using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Blob storage types
-using System.Diagnostics;
 using System.IO;
 using System;
 
@@ -31,8 +28,6 @@ namespace FunctionApp
             // Set name to query string or body data
             name = name ?? data?.name;
 
-            //ConnectToBlob(data.imgUrl);
-            //ConnectToBlob();
             UploadBlob(name);
 
             return name == null
@@ -42,7 +37,7 @@ namespace FunctionApp
 
 
         /// <summary>
-        /// 
+        /// Uploads content to blob storage
         /// </summary>
         /// <param name="name">Parsed filepath from URL in web request. Will be used to generate a name for the file stored in Blob.</param>
         private static void UploadBlob(string name)
@@ -53,34 +48,35 @@ namespace FunctionApp
             abm.ContainerName = AzureBlobManager.ROOT_CONTAINER_NAME;
             abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
 
-            //Check if the Container Exists
+            //Check if the Container Exists. If it does.....
+            // TODO: Consider creating a new contanier for each day
             if (abm.DoesContainerExist(abm.ContainerName))
             {
-                using (WebClient webClient = new WebClient())
-                {
-                    byte[] data = webClient.DownloadData(name);
-
-                    using (MemoryStream mem = new MemoryStream(data))
-                    {
-                        abm.CreateContainer(abm.ContainerName);
-                        abm.PutBlob(abm.ContainerName, newName, data);
-                    }
-                }
+                UploadToBlobViaMemStream(name, newName, abm);
             }
             else
             {
-                //TODO: hardcoded for now
-                var imagePath = "http://snoopdogg.com/wp-content/themes/snoop_2014/assets/images/og-img.jpg";
+                UploadToBlobViaMemStream(name, newName, abm);
+            }
+        }
 
-                using (WebClient webClient = new WebClient())
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name">Name of the file from the POST request</param>
+        /// <param name="newName">Returned name with current date pre-pended</param>
+        /// <param name="abm">Reference to Azure Blob Manager</param>
+        private static void UploadToBlobViaMemStream(string name, string newName, AzureBlobManager abm)
+        {
+            using (WebClient webClient = new WebClient())
+            {
+                byte[] data = webClient.DownloadData(name);
+
+                using (MemoryStream mem = new MemoryStream(data))
                 {
-                    byte[] data = webClient.DownloadData(imagePath);
-
-                    using (MemoryStream mem = new MemoryStream(data))
-                    {
-                        abm.CreateContainer(abm.ContainerName);
-                        abm.PutBlob(abm.ContainerName, newName, data);
-                    }
+                    abm.CreateContainer(abm.ContainerName);
+                    abm.PutBlob(abm.ContainerName, newName, data);
                 }
             }
         }
