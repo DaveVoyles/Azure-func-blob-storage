@@ -47,24 +47,18 @@ namespace FunctionApp
         /// <param name="name">Parsed filepath from URL in web request. Will be used to generate a name for the file stored in Blob.</param>
         private static void UploadBlob(string name)
         {
-            // Get file name from the url
-            string fileName    = Path.GetFileName(name);
-            // Creating the name
-            string currentTime = DateTime.Now.ToString("yyyy-dd-M-HH-");
-            string newName     = currentTime + fileName;
+            string newName = GenerateNameFromFile(name);
 
-            AzureBlobManager abm               = new AzureBlobManager();
-                             abm.ContainerName = AzureBlobManager.ROOT_CONTAINER_NAME;
-                             abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
+            AzureBlobManager abm = new AzureBlobManager();
+            abm.ContainerName = AzureBlobManager.ROOT_CONTAINER_NAME;
+            abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
 
             //Check if the Container Exists
             if (abm.DoesContainerExist(abm.ContainerName))
             {
-                var imagePath = "http://snoopdogg.com/wp-content/themes/snoop_2014/assets/images/og-img.jpg";
-
                 using (WebClient webClient = new WebClient())
                 {
-                    byte[] data = webClient.DownloadData(imagePath);
+                    byte[] data = webClient.DownloadData(name);
 
                     using (MemoryStream mem = new MemoryStream(data))
                     {
@@ -92,57 +86,19 @@ namespace FunctionApp
         }
 
 
-
-
-
-        public static void ConnectToBlob(/*string imgData*/)
+        /// <summary>
+        ///  Grab file name from file & append the date
+        /// </summary>
+        /// <param name="name">Name from the file POSTed</param>
+        private static string GenerateNameFromFile(string name)
         {
-            var connString = "DefaultEndpointsProtocol=https;AccountName=dvgraphstore;AccountKey=PrVUPAQSKHMXJTvRiUq8dMomIau6TsJFKCEy+Ml45Ayd7JjNR90x8eFL7cyxqUKj1jFUxYv642wraPYc9k6zgw==;";
-
-            Guid id = Guid.NewGuid();
-
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connString);
-
-            // Create the blob client.
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-
-            // Retrieve a reference to a container.
-            //CloudBlobContainer container = blobClient.GetContainerReference("mycontainer-" + id);
-            CloudBlobContainer container = blobClient.GetContainerReference("test-cont"+id);
-
-            // Create the container if it doesn't already exist.
-            container.CreateIfNotExists();
-
-            // Retrieve reference to a blob named "myblob".
-            CloudBlockBlob blockBlob = container.GetBlockBlobReference("myblob.jpg");
-
-            // Set permissions
-            container.SetPermissions(
-                new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Container });
-
             // Get file name from the url
-            //string fileName = Path.GetFileName(imgData);
+            string fileName = Path.GetFileName(name);
 
-            var imagePath = "http://snoopdogg.com/wp-content/themes/snoop_2014/assets/images/og-img.jpg";
+            string currentTime = DateTime.Now.ToString("yyyy-dd-M-HH-");
+            string newName = currentTime + fileName;
 
-            using (WebClient webClient = new WebClient())
-            {
-                byte[] data = webClient.DownloadData(imagePath);
-
-                using (MemoryStream mem = new MemoryStream(data))
-                {
-                    blockBlob.UploadFromByteArrayAsync(data, 0, data.Length);
-
-                    // Alternate way to upload images, via memory stream
-                    //using (var yourImage = Image.FromStream(mem))
-                    //{
-                    //    //blockBlob.UploadFromStream(mem);
-                    //}
-                }
-
-            }
-
+            return newName;
         }
-
     }
 }
