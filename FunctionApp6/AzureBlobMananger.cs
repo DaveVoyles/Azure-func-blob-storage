@@ -109,7 +109,7 @@ namespace FunctionApp
             public AzureBlobManager()
             {
             //_storageAccount = new CloudStorageAccount(_storageCredentials, false);
-                CloudStorageAccount _storageAccount = CloudStorageAccount.Parse(connString);
+                _storageAccount = CloudStorageAccount.Parse(connString);
                 _blobClient = _storageAccount.CreateCloudBlobClient();
                 _container = _blobClient.GetContainerReference(ROOT_CONTAINER_NAME);
             }
@@ -212,23 +212,40 @@ namespace FunctionApp
                         {
                             CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
                             _blockBlob = container.GetBlockBlobReference(blobName);
-                        //CloudBlob blob = container.GetBlobReference(blobName);
-                        using (var stream = new MemoryStream(content, writable: false))
-                            {
-                                _blockBlob.UploadFromStream(stream);
-                            }
-                        //blob.UploadByteArray(content);
+                            using (var stream = new MemoryStream(content, writable: false))
+                                {
+                                    _blockBlob.UploadFromStream(stream);
+                                }
                     });
             }
 
+
             /// <summary>
-            /// Creates the container in Azure blob storage. 
-            /// This really shouldn't need to happen once a system has been established.
-            /// Should call DoesContainerExist to see if it exists before calling this method.
+            /// Updates or created a blob in Azure blob storage via a byte array
             /// </summary>
-            /// <param name="containerName">Name of the container.</param>
-            /// <returns>True if container was created successfully; false otherwise</returns>
-            public bool CreateContainer(string containerName)
+            /// <param name="containerName">Name of the container to upload into.</param>
+            /// <param name="blobName">Name of the blob.</param>
+            /// <param name="content">The content of the blob.</param>
+            /// <returns></returns>
+            public bool PutBlobViaByteArray(string containerName, string blobName, byte[] content)
+            {
+                return ExecuteWithExceptionHandlingAndReturnValue(
+                        () =>
+                        {
+                            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+                            _blockBlob = container.GetBlockBlobReference(blobName);
+                            _blockBlob.UploadFromByteArray(content, 0, content.Length);
+                            });
+            }
+
+        /// <summary>
+        /// Creates the container in Azure blob storage. 
+        /// This really shouldn't need to happen once a system has been established.
+        /// Should call DoesContainerExist to see if it exists before calling this method.
+        /// </summary>
+        /// <param name="containerName">Name of the container.</param>
+        /// <returns>True if container was created successfully; false otherwise</returns>
+        public bool CreateContainer(string containerName)
             {
                 return ExecuteWithExceptionHandlingAndReturnValue(
                         () =>

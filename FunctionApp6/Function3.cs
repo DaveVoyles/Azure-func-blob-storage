@@ -33,7 +33,7 @@ namespace FunctionApp
 
             //ConnectToBlob(data.imgUrl);
             //ConnectToBlob();
-            BlobStuff();
+            UploadBlob(name);
 
             return name == null
                 ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
@@ -41,27 +41,53 @@ namespace FunctionApp
         }
 
 
-        private static void BlobStuff()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name">Parsed filepath from URL in web request. Will be used to generate a name for the file stored in Blob.</param>
+        private static void UploadBlob(string name)
         {
-            AzureBlobManager abm = new AzureBlobManager();
+            // Get file name from the url
+            string fileName    = Path.GetFileName(name);
+            // Creating the name
+            string currentTime = DateTime.Now.ToString("yyyy-dd-M-HH-");
+            string newName     = currentTime + fileName;
+
+            AzureBlobManager abm               = new AzureBlobManager();
                              abm.ContainerName = AzureBlobManager.ROOT_CONTAINER_NAME;
                              abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
-
 
             //Check if the Container Exists
             if (abm.DoesContainerExist(abm.ContainerName))
             {
-                //If so, do this if you want to delete all the files already there.
-                if (abm.DoesBlobDirectoryExist(abm.ContainerName, abm.DirectoryName))
+                var imagePath = "http://snoopdogg.com/wp-content/themes/snoop_2014/assets/images/og-img.jpg";
+
+                using (WebClient webClient = new WebClient())
                 {
-                    abm.DeleteBlobDirectory(abm.ContainerName, abm.DirectoryName);
+                    byte[] data = webClient.DownloadData(imagePath);
+
+                    using (MemoryStream mem = new MemoryStream(data))
+                    {
+                        abm.CreateContainer(abm.ContainerName);
+                        abm.PutBlob(abm.ContainerName, newName, data);
+                    }
                 }
             }
             else
             {
-                abm.CreateContainer(abm.ContainerName);
-                Debug.WriteLine("Contrainer created! " + abm.ContainerName);
-                //throw new Exception("The specified Azure Container \"" + abm.ContainerName + "\" doesn't exist.");
+                //TODO: hardcoded for now
+                var imagePath = "http://snoopdogg.com/wp-content/themes/snoop_2014/assets/images/og-img.jpg";
+
+                using (WebClient webClient = new WebClient())
+                {
+                    byte[] data = webClient.DownloadData(imagePath);
+
+                    using (MemoryStream mem = new MemoryStream(data))
+                    {
+                        abm.CreateContainer(abm.ContainerName);
+                        abm.PutBlob(abm.ContainerName, newName, data);
+                    }
+                }
             }
         }
 
