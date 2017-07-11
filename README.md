@@ -9,10 +9,37 @@ Manipulate blob storage from an Azure Function. Simply host this project in Azur
 
 
 ## Instructions
-In AzureBlobManager.cs, set your:
-* key
-* account name
-* connection string
+You'll need to set the conection string to your **Azure Blob Storage Account** to store any content and use this function.
+
+### If testing locally...
+Create a local.settings.json file, and store your connection string there, with the name *ConnString*. Ex:
+
+```
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=funcstoracct;AccountKey=fq8O0ie/UGgFP6lh2yA1vpXky0MT7s3BdT2tFi1cWSgZI4yPZs/Hgr6lwCaGKH/+EDEOmt7+1S4seyHJ6YRYVQ==;EndpointSuffix=core.windows.net",
+    "AzureWebJobsDashboard": "",
+    "ConnString": "DefaultEndpointsProtocol=https;AccountName=myaccountname;AccountKey=311666311666311666==;"
+  }
+```
+
+AzureBlobManager.cs uses this to connect to your blob storage account:
+
+``` csharp
+
+        private static string connString = Environment.GetEnvironmentVariable("ConnString");       
+         
+        public AzureBlobManager()
+        {
+            _storageAccount = CloudStorageAccount.Parse(connString);
+            _blobClient = _storageAccount.CreateCloudBlobClient();
+            _container = _blobClient.GetContainerReference(ROOT_CONTAINER_NAME);
+        }
+```
+
+### If hosting this in azure
+Create your connection string in the configuration tool there. [Documentation.](https://azure.microsoft.com/en-us/blog/windows-azure-web-sites-how-application-strings-and-connection-strings-work/)
+
 
 ### Passing an image to the function
 
