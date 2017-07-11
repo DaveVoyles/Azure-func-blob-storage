@@ -86,7 +86,7 @@ namespace FunctionApp
             public static string GenerateNameForContainer()
             {
                 string containerName = ROOT_CONTAINER_NAME;
-                string currentTime   = DateTime.Now.ToString("-yy-M-dd");
+                string currentTime   = DateTime.Now.ToString("-dd-M-yy");
                 string newName       = containerName + currentTime;
 
                 return newName;
@@ -94,20 +94,23 @@ namespace FunctionApp
 
         #endregion Public Constants
 
-        #region Private Members
+            #region Private Members
 
-        private CloudBlobClient _blobClient;
+            private CloudBlobClient _blobClient;
             private string _containerName;
             private string _blobName;
             private string _directoryName;
-            private static string _key;
-            private static string _name;
-        private static string connString;
+            private static string _key       = Environment.GetEnvironmentVariable("Key");
+            private static string _name      = Environment.GetEnvironmentVariable("AccountName");
+            private static string connString = Environment.GetEnvironmentVariable("ConnString");
 
-            //To initialize the default storage credentials if none are provided. 
-            //For now we're going to assume everything is going to this blob storage.
-            //private StorageCredentials _storageCredentials = new StorageCredentials(_name, _key);
-            CloudStorageAccount _storageCredentials = CloudStorageAccount.Parse(connString);
+        //var conn = System.Configuration.ConfigurationManager.ConnectionStrings["MyConn"].ConnectionString;
+
+
+        //To initialize the default storage credentials if none are provided. 
+        //For now we're going to assume everything is going to this blob storage.
+        //private StorageCredentials _storageCredentials = new StorageCredentials(_name, _key);
+        CloudStorageAccount _storageCredentials = CloudStorageAccount.Parse(connString);
 
             private CloudStorageAccount _storageAccount;// = new CloudStorageAccount(_storageCredentials, false);
             private CloudBlobContainer _container;

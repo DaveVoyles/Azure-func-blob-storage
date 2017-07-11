@@ -32,7 +32,7 @@ namespace FunctionApp
 
             return name == null
                 ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
-                : req.CreateResponse(HttpStatusCode.OK, "Hello " + name);
+                : req.CreateResponse(HttpStatusCode.OK, "Name of the file passed is: " + name);
         }
 
 
@@ -73,6 +73,7 @@ namespace FunctionApp
             {
                 byte[] data = webClient.DownloadData(name);
 
+                // Set up output binding to blob storage 
                 using (MemoryStream mem = new MemoryStream(data))
                 {
                     abm.CreateContainer(abm.ContainerName);
@@ -90,7 +91,7 @@ namespace FunctionApp
         {
             // Get file name from the url
             string fileName    = Path.GetFileName(name);
-            string currentTime = DateTime.Now.ToString("yy-M-dd-HH-");
+            string currentTime = DateTime.Now.ToString("yy-M-dd-HH-mm-");
             string newName     = currentTime + fileName;
 
             return newName;
