@@ -23,6 +23,10 @@ Create a local.settings.json file, and store your connection string there, with 
   }
 ```
 
+That information can be found in your Azure Portal, Azure Storage Explorer, or through the Functions CLI. Here is where it appears in the portal:
+
+![Imgur](http://i.imgur.com/bVsa0zI.png)
+
 AzureBlobManager.cs uses this to connect to your blob storage account:
 
 ``` csharp
