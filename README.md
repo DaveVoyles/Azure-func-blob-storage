@@ -23,6 +23,10 @@ Create a local.settings.json file, and store your connection string there, with 
   }
 ```
 
+That information can be found in your Azure Portal, Azure Storage Explorer, or through the Functions CLI. Here is where it appears in the portal:
+
+![Imgur](http://i.imgur.com/bVsa0zI.png)
+
 AzureBlobManager.cs uses this to connect to your blob storage account:
 
 ``` csharp
@@ -47,9 +51,17 @@ This is done by making an HTTP POST request. Inside the body of the message, we 
 
 ```json
 {
-    "name" : "AddressOfTheImage"
+	"name":"http://snoopdogg.com/wp-content/themes/snoop_2014/assets/images/og-img.jpg"
 }
 ```
+
+In a tool such as Postman, I would write my message like so:
+
+![Imgur](http://i.imgur.com/mjUb0DS.png)
+
+The URL to send the message is found in the console when you start your Azure Function app. 
+![Imgur](http://i.imgur.com/wy8ABfa.png)
+
 
 This takes the name of the image, pre-pends the current date, and saves the image to blob storage. 
 
