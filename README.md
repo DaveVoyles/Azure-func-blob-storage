@@ -55,6 +55,9 @@ In a tool such as Postman, I would write my message like so:
 
 ![Imgur](http://i.imgur.com/mjUb0DS.png)
 
+The URL to send the message is found in the console when you start your Azure Function app. 
+![Imgur](http://i.imgur.com/wy8ABfa.png)
+
 
 This takes the name of the image, pre-pends the current date, and saves the image to blob storage. 
 
