@@ -53,8 +53,7 @@ This is done by making an HTTP POST request. Inside the body of the message, we 
 
 In a tool such as Postman, I would write my message like so:
 
-![alt text](http://imgur.com/mjUb0DS "Postman post")
-
+[Imgur](http://i.imgur.com/mjUb0DS.png)
 
 
 This takes the name of the image, pre-pends the current date, and saves the image to blob storage. 
