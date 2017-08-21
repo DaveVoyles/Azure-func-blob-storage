@@ -34,7 +34,7 @@ namespace FunctionApp
                 ? req.CreateResponse(HttpStatusCode.BadRequest, "Please pass a name on the query string or in the request body")
                 : req.CreateResponse(HttpStatusCode.OK, "Name of the file passed is: " + name);
         }
-
+    
 
         /// <summary>
         /// Uploads content to blob storage
@@ -47,6 +47,9 @@ namespace FunctionApp
             AzureBlobManager abm               = new AzureBlobManager();
                              abm.ContainerName = AzureBlobManager.GenerateNameForContainer();
                              abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
+
+     /*       abm.GetAllBlobsInContainer("dumpster");*/
+            abm.GetAllBlobNames("dumpster");
 
             //Check if the Container Exists. If it does.....
             // TODO: Consider creating a new contanier for each day

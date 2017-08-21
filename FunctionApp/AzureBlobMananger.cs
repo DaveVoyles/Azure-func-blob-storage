@@ -1,13 +1,13 @@
 ﻿//C# Azure Blob Storage Manager class. 
 //Basic functionality for blob storage in the Azure cloud.
-    using Microsoft.WindowsAzure.Storage;
-    using Microsoft.WindowsAzure.Storage.Auth;
-    using Microsoft.WindowsAzure.Storage.Blob;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FunctionApp
 {
@@ -70,20 +70,21 @@ namespace FunctionApp
     /// </summary>
     public class AzureBlobManager
         {
-            #region Public Constants
-            /// <summary>
-            /// The root top level container in Azure blob.
-            /// Rename as appropriate for your system.
-            /// NOTE: MUST be --lower case--, otherwise Azure returns a 400 error
-            /// </summary>
-            public const string ROOT_CONTAINER_NAME = "container";
+        #region Public Constants
+        /// <summary>
+        /// The root top level container in Azure blob.
+        /// Rename as appropriate for your system.
+        /// NOTE: MUST be --lower case--, otherwise Azure returns a 400 error
+        /// </summary>
+        //public const string ROOT_CONTAINER_NAME = "container";
+        public const string ROOT_CONTAINER_NAME = "dumpster";
 
-            /// <summary>
-            ///  Grab file name from file & append the date.
-            ///  Later on we'll use this to search for containers within a week and return those w/ images
-            /// </summary>
-            /// <param name="name">Name from the file POSTed</param>
-            public static string GenerateNameForContainer()
+        /// <summary>
+        ///  Grab file name from file & append the date.
+        ///  Later on we'll use this to search for containers within a week and return those w/ images
+        /// </summary>
+        /// <param name="name">Name from the file POSTed</param>
+        public static string GenerateNameForContainer()
             {
                 string containerName = ROOT_CONTAINER_NAME;
                 string currentTime   = DateTime.Now.ToString("-dd-M-yy");
@@ -96,13 +97,13 @@ namespace FunctionApp
 
             #region Private Members
 
-            private CloudBlobClient _blobClient;
-            private string _containerName;
-            private string _blobName;
-            private string _directoryName;
-            private static string _key       = Environment.GetEnvironmentVariable("Key");
-            private static string _name      = Environment.GetEnvironmentVariable("AccountName");
-            private static string connString = Environment.GetEnvironmentVariable("ConnString");
+            private CloudBlobClient _blobClient                                                   ;
+            private string          _containerName                                                ;
+            private string          _blobName                                                     ;
+            private string          _directoryName                                                ;
+            private static string   _key       = Environment.GetEnvironmentVariable("Key"        );
+            private static string   _name      = Environment.GetEnvironmentVariable("AccountName");
+            private static string connString   = Environment.GetEnvironmentVariable("ConnString" );
 
         //var conn = System.Configuration.ConfigurationManager.ConnectionStrings["MyConn"].ConnectionString;
 
@@ -113,8 +114,8 @@ namespace FunctionApp
         CloudStorageAccount _storageCredentials = CloudStorageAccount.Parse(connString);
 
             private CloudStorageAccount _storageAccount;// = new CloudStorageAccount(_storageCredentials, false);
-            private CloudBlobContainer _container;
-            private CloudBlockBlob _blockBlob; // = _container.GetBlockBlobReference("myfirstupload.txt");
+            private CloudBlobContainer  _container;
+            private CloudBlockBlob      _blockBlob;     // = _container.GetBlockBlobReference("myfirstupload.txt");
 
             #endregion Private Members
 
@@ -129,8 +130,8 @@ namespace FunctionApp
             {
             //_storageAccount = new CloudStorageAccount(_storageCredentials, false);
                 _storageAccount = CloudStorageAccount.Parse(connString);
-                _blobClient = _storageAccount.CreateCloudBlobClient();
-                _container = _blobClient.GetContainerReference(ROOT_CONTAINER_NAME);
+                _blobClient     = _storageAccount.CreateCloudBlobClient();
+                _container      = _blobClient.GetContainerReference(ROOT_CONTAINER_NAME);
             }
 
             /// <summary>
@@ -140,9 +141,9 @@ namespace FunctionApp
             public AzureBlobManager(string containerName, StorageCredentials storageCredentials)
             {
                 _storageAccount = new CloudStorageAccount(storageCredentials, false);
-                _blobClient = _storageAccount.CreateCloudBlobClient();
-                _containerName = containerName;
-                _container = _blobClient.GetContainerReference(_containerName);
+                _blobClient     = _storageAccount.CreateCloudBlobClient();
+                _containerName  = containerName;
+                _container      = _blobClient.GetContainerReference(_containerName);
             }
 
             #endregion Constructors
@@ -207,7 +208,7 @@ namespace FunctionApp
             public byte[] GetBlob(string containerName, string blobName)
             {
                 CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-                _blockBlob = container.GetBlockBlobReference(blobName);
+                _blockBlob                   = container.GetBlockBlobReference(blobName);
                 _blockBlob.FetchAttributes();
 
                 long fileByteLength = _blockBlob.Properties.Length;
@@ -217,14 +218,78 @@ namespace FunctionApp
                 return fileContents;
             }
 
-            /// <summary>
-            /// Updates or created a blob in Azure blob storage
-            /// </summary>
-            /// <param name="containerName">Name of the container to upload into.</param>
-            /// <param name="blobName">Name of the blob.</param>
-            /// <param name="content">The content of the blob.</param>
-            /// <returns></returns>
-            public bool PutBlob(string containerName, string blobName, byte[] content)
+        /// <summary>
+        /// Downloads the contents of a blob into a byte[]
+        /// </summary>
+        /// <param name="containerName">The blob's container</param>
+        /// <returns>byte[] with the blob's contents</returns>
+        //public byte[] GetBlob(string containerName)
+        //{
+        //    CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+
+        //    //List blobs and directories in this container
+        //    var blobs = container.ListBlobs();
+
+        //    foreach (var blobItem in blobs)
+        //    {
+        //        Console.WriteLine(blobItem.Uri);
+
+        //        long fileByteLength = blobItem.Properties.Length;
+        //        byte[] fileContents = new byte[fileByteLength];
+        //        _blockBlob.DownloadToByteArray(fileContents, 0)
+
+        //    }
+        //    return fileContents;
+        //}
+
+        //public void GetAllBlobsInContainer(string containerName)
+        //{
+        //    CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+        //    Console.WriteLine(container);
+
+        //    //List blobs and directories in this container
+        //    var blobs = container.ListBlobs();
+
+        //    foreach (var blobItem in blobs)
+        //    {
+        //        Console.WriteLine(blobItem.Uri);
+        //        blobItem.fe
+        //        var bytes = blobItem.Container.GetBlobRefer
+        //    }
+        //}
+
+       
+        public IEnumerable<string> GetAllBlobNames(string containerName)
+        {
+            try
+            {
+                CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+                var blobs                    = container.ListBlobs(useFlatBlobListing: true);
+
+                var blobNames = new List<string>();
+                foreach (var item in blobs)
+                {
+                    var blob = (CloudBlockBlob)item;
+                        blob.FetchAttributes();
+                        blobNames.Add(blob.Name);
+                }
+                return blobNames;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Couldn't get all blob names" + ex);
+            }
+        }
+
+
+        /// <summary>
+        /// Updates or created a blob in Azure blob storage
+        /// </summary>
+        /// <param name="containerName">Name of the container to upload into.</param>
+        /// <param name="blobName">Name of the blob.</param>
+        /// <param name="content">The content of the blob.</param>
+        /// <returns></returns>
+        public bool PutBlob(string containerName, string blobName, byte[] content)
             {
                 return ExecuteWithExceptionHandlingAndReturnValue(
                         () =>
