@@ -48,8 +48,9 @@ namespace FunctionApp
                              abm.ContainerName = AzureBlobManager.GenerateNameForContainer();
                              abm.DirectoryName = "TheBlob" + "/" + "PathYouWant" + "/";
 
-     /*       abm.GetAllBlobsInContainer("dumpster");*/
-            abm.GetAllBlobNames("dumpster");
+            /*       abm.GetAllBlobsInContainer("dumpster");*/
+            //abm.GetAllBlobNames("dumpster");
+             abm.GetAllBlobsInContainer("dumpster");
 
             //Check if the Container Exists. If it does.....
             // TODO: Consider creating a new contanier for each day

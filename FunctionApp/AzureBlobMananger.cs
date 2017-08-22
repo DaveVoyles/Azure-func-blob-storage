@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace FunctionApp
 {
@@ -105,13 +106,13 @@ namespace FunctionApp
             private static string   _name      = Environment.GetEnvironmentVariable("AccountName");
             private static string connString   = Environment.GetEnvironmentVariable("ConnString" );
 
-        //var conn = System.Configuration.ConfigurationManager.ConnectionStrings["MyConn"].ConnectionString;
+            //var conn = System.Configuration.ConfigurationManager.ConnectionStrings["MyConn"].ConnectionString;
 
 
-        //To initialize the default storage credentials if none are provided. 
-        //For now we're going to assume everything is going to this blob storage.
-        //private StorageCredentials _storageCredentials = new StorageCredentials(_name, _key);
-        CloudStorageAccount _storageCredentials = CloudStorageAccount.Parse(connString);
+            //To initialize the default storage credentials if none are provided. 
+            //For now we're going to assume everything is going to this blob storage.
+            //private StorageCredentials _storageCredentials = new StorageCredentials(_name, _key);
+            CloudStorageAccount _storageCredentials = CloudStorageAccount.Parse(connString);
 
             private CloudStorageAccount _storageAccount;// = new CloudStorageAccount(_storageCredentials, false);
             private CloudBlobContainer  _container;
@@ -195,91 +196,101 @@ namespace FunctionApp
                 }
             }
 
-            #endregion Public Properties
+        #endregion Public Properties
 
-            #region Public Methods
-
-            /// <summary>
-            /// Downloads the contents of a blob into a byte[]
-            /// </summary>
-            /// <param name="containerName">The blob's container</param>
-            /// <param name="blobName">The name of the blob to download</param>
-            /// <returns>byte[] with the blob's contents</returns>
-            public byte[] GetBlob(string containerName, string blobName)
-            {
-                CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-                _blockBlob                   = container.GetBlockBlobReference(blobName);
-                _blockBlob.FetchAttributes();
-
-                long fileByteLength = _blockBlob.Properties.Length;
-                byte[] fileContents = new byte[fileByteLength];
-                _blockBlob.DownloadToByteArray(fileContents, 0);
-
-                return fileContents;
-            }
+        #region Public Methods
 
         /// <summary>
         /// Downloads the contents of a blob into a byte[]
         /// </summary>
         /// <param name="containerName">The blob's container</param>
+        /// <param name="blobName">The name of the blob to download</param>
         /// <returns>byte[] with the blob's contents</returns>
-        //public byte[] GetBlob(string containerName)
-        //{
-        //    CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-
-        //    //List blobs and directories in this container
-        //    var blobs = container.ListBlobs();
-
-        //    foreach (var blobItem in blobs)
-        //    {
-        //        Console.WriteLine(blobItem.Uri);
-
-        //        long fileByteLength = blobItem.Properties.Length;
-        //        byte[] fileContents = new byte[fileByteLength];
-        //        _blockBlob.DownloadToByteArray(fileContents, 0)
-
-        //    }
-        //    return fileContents;
-        //}
-
-        //public void GetAllBlobsInContainer(string containerName)
-        //{
-        //    CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-        //    Console.WriteLine(container);
-
-        //    //List blobs and directories in this container
-        //    var blobs = container.ListBlobs();
-
-        //    foreach (var blobItem in blobs)
-        //    {
-        //        Console.WriteLine(blobItem.Uri);
-        //        blobItem.fe
-        //        var bytes = blobItem.Container.GetBlobRefer
-        //    }
-        //}
-
-       
-        public IEnumerable<string> GetAllBlobNames(string containerName)
+        public byte[] GetBlob(string containerName, string blobName)
         {
-            try
-            {
-                CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-                var blobs                    = container.ListBlobs(useFlatBlobListing: true);
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+            _blockBlob = container.GetBlockBlobReference(blobName);
+            _blockBlob.FetchAttributes();
 
-                var blobNames = new List<string>();
-                foreach (var item in blobs)
-                {
-                    var blob = (CloudBlockBlob)item;
-                        blob.FetchAttributes();
-                        blobNames.Add(blob.Name);
-                }
-                return blobNames;
-            }
-            catch (Exception ex)
+            long fileByteLength = _blockBlob.Properties.Length;
+            byte[] fileContents = new byte[fileByteLength];
+            _blockBlob.DownloadToByteArray(fileContents, 0);
+
+            return fileContents;
+        }
+
+
+        /// <summary>
+        /// Save blob as a Byte Array.
+        /// </summary>
+        /// <param name="blob"></param>
+        /// <returns>Byte Array of blob from Azure</returns>
+        public byte[] GetBlobAsByteArr(CloudBlob blob)
+        {
+            blob.FetchAttributes();
+            long fileByteLength = blob.Properties.Length;
+            byte[] fileContents = new byte[fileByteLength];
+            blob.DownloadToByteArray(fileContents, 0);
+
+            return fileContents;
+        }
+
+
+        /// <summary>
+        /// Loops through blobs in a blob container.
+        /// </summary>
+        /// <param name="containerName"></param>
+        public void GetAllBlobsInContainer(string containerName)
+        {
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+            var blobs                    = container.ListBlobs(useFlatBlobListing: true);
+
+            foreach (var item in blobs)
             {
-                throw new Exception("Couldn't get all blob names" + ex);
+                var blob = (CloudBlockBlob)item;
+                LoadImage(GetBlobAsByteArr(blob));
             }
         }
+
+
+        /// <summary>
+        /// Loads an image from a byte array.
+        /// </summary>
+        /// <param name="imageByteArr">Byte array from blob</param>
+        /// <returns>An Image object</returns>
+        private static Image LoadImage(byte[] imageByteArr)
+        {
+            if (imageByteArr == null || imageByteArr.Length == 0) return null;
+
+            using (var mem = new MemoryStream(imageByteArr))
+            {
+                Image image = Image.FromStream(mem);
+                return image;
+            }
+        }
+
+
+        public IEnumerable<string> GetAllBlobNames(string containerName)
+            {
+                try
+                {
+                    CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+                    var blobs                    = container.ListBlobs(useFlatBlobListing: true);
+
+                    var blobNames = new List<string>();
+                    foreach (var item in blobs)
+                    {
+                        var blob = (CloudBlockBlob)item;
+                            blob.FetchAttributes();
+                            blobNames.Add(blob.Name);
+                    }
+                    return blobNames;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Couldn't get all blob names" + ex);
+                }
+            }
 
 
         /// <summary>
