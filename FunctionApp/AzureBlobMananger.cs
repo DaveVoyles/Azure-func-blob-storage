@@ -253,7 +253,28 @@ namespace FunctionApp
             CombineImages(imageList);
         }
 
+        /// <summary>
+        /// Stores Images returned from blob storage.
+        /// </summary>
         public List<Image> imageList = new List<Image>();
+
+        /// <summary>
+        /// Retrieves all image blobs from Azure and combines them as one canvas.
+        /// </summary>
+        /// <param name="containerName">Container to retrieve blobs from.</param>
+        public void CombineAllBlobsFromContainer(string containerName)
+        {
+            CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+            var blobs = container.ListBlobs(useFlatBlobListing: true);
+
+            foreach (var item in blobs)
+            {
+                var blob = (CloudBlockBlob)item;
+                LoadImage(GetBlobAsByteArr(blob));
+            }
+            CombineImages(imageList);
+        }
+
    
         /// <summary>
         /// Loads an image from a byte array.
@@ -272,7 +293,11 @@ namespace FunctionApp
             }
         }
         
-
+        /// <summary>
+        /// Retrieves all blob names from within a container.
+        /// </summary>
+        /// <param name="containerName">Container to retrieve blobs from.</param>
+        /// <returns>IEnumerable string of the blob names</returns>
         public IEnumerable<string> GetAllBlobNames(string containerName)
         {
             try
