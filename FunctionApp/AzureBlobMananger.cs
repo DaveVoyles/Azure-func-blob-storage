@@ -235,22 +235,25 @@ namespace FunctionApp
             return fileContents;
         }
 
-
         /// <summary>
         /// Loops through blobs in a blob container.
         /// </summary>
-        /// <param name="containerName"></param>
-        public void GetAllBlobsInContainer(string containerName)
+        /// <param name="containerName">Container to parse blobs from</param>
+        /// <returns>List of Cloud Blobs</returns>
+        public List<CloudBlob> GetAllBlobsInContainerAsCloudBlob(string containerName)
         {
+            var listOfBlobs = new List<CloudBlob>();
             CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
             var blobs                    = container.ListBlobs(useFlatBlobListing: true);
 
             foreach (var item in blobs)
             {
                 var blob = (CloudBlockBlob)item;
-                LoadImage(GetBlobAsByteArr(blob));
+                listOfBlobs.Add(blob);
             }
             CombineImages(imageList);
+
+            return listOfBlobs;
         }
 
         /// <summary>
