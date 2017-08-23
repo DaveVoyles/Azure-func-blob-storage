@@ -250,47 +250,104 @@ namespace FunctionApp
                 var blob = (CloudBlockBlob)item;
                 LoadImage(GetBlobAsByteArr(blob));
             }
+            CombineImages(imageList);
         }
 
-
+        public List<Image> imageList = new List<Image>();
+   
         /// <summary>
         /// Loads an image from a byte array.
         /// </summary>
         /// <param name="imageByteArr">Byte array from blob</param>
         /// <returns>An Image object</returns>
-        private static Image LoadImage(byte[] imageByteArr)
+        public Image LoadImage(byte[] imageByteArr)
         {
             if (imageByteArr == null || imageByteArr.Length == 0) return null;
 
             using (var mem = new MemoryStream(imageByteArr))
             {
                 Image image = Image.FromStream(mem);
+                imageList.Add(image);
                 return image;
+            }
+        }
+        
+
+        public IEnumerable<string> GetAllBlobNames(string containerName)
+        {
+            try
+            {
+                CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+                var blobs                    = container.ListBlobs(useFlatBlobListing: true);
+                var blobNames                = new List<string>();
+
+                foreach (var item in blobs)
+                {
+                    var blob = (CloudBlockBlob)item;
+                        blob.FetchAttributes();
+                        blobNames.Add(blob.Name);
+                }
+                return blobNames;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Couldn't get all blob names" + ex);
             }
         }
 
 
-        public IEnumerable<string> GetAllBlobNames(string containerName)
-            {
-                try
-                {
-                    CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
-                    var blobs                    = container.ListBlobs(useFlatBlobListing: true);
 
-                    var blobNames = new List<string>();
-                    foreach (var item in blobs)
-                    {
-                        var blob = (CloudBlockBlob)item;
-                            blob.FetchAttributes();
-                            blobNames.Add(blob.Name);
-                    }
-                    return blobNames;
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Couldn't get all blob names" + ex);
-                }
+        /// <summary>
+        /// Combine a List of Images into one image and save
+        /// </summary>
+        /// <param name="images">List of Images</param>
+        private void CombineImages(List<Image> images)
+        {
+            //change the location to store the final image.
+            string finalImage      = @"D:\Scratch\FunctionApp\FunctionApp\img\FinalImage.jpg";
+            List<int> imageHeights = new List<int>();
+            int nIndex             = 0;
+            int width              = 0;
+            
+            // Set H/W based on list of images
+            foreach(Image image in images)
+            {
+                imageHeights.Add(image.Height);
+                width += image.Width;
             }
+
+            imageHeights.Sort();
+            int height = imageHeights[imageHeights.Count - 1];
+
+            // Create new bitmap size based on proportions from images
+            Bitmap img3 = new Bitmap(width, height);
+            Graphics g  = Graphics.FromImage(img3);
+                     g.Clear(SystemColors.AppWorkspace);
+
+
+            // Create an image from each one in thelist
+            foreach (Image img in images)
+            {
+                if (nIndex == 0)
+                {
+                    g.DrawImage(img, new Point(0, 0));
+                    nIndex++;
+                    width = img.Width;
+                }
+                else
+                {
+                    g.DrawImage(img, new Point(width, 0));
+                    width += img.Width;
+                }
+                img.Dispose();
+            }
+
+            g.Dispose();
+
+            img3.Save(finalImage, System.Drawing.Imaging.ImageFormat.Jpeg);
+            img3.Dispose();
+        }
+
 
 
         /// <summary>
@@ -593,20 +650,21 @@ namespace FunctionApp
                     });
             }
 
-            #endregion  Public Methods
 
-            #region Private Methods
+        #endregion  Public Methods
 
-            //A good read on storage exceptions:
-            //http://stackoverflow.com/questions/15623306/error-handling-for-windows-azure-storage-migration-from-1-7-to-2-0
-            //and
-            //https://alexandrebrisebois.wordpress.com/2013/07/03/handling-windows-azure-storage-exceptions/
-            /// <summary>
-            /// Tries the perform the Action. If an exception occurs that is not a "409" error, the
-            /// exception will be rethrown. Blob service error codes: https://msdn.microsoft.com/en-au/library/azure/dd179439.aspx
-            /// </summary>
-            /// <param name="action">The Action to perform.</param>
-            private void ExecuteWithExceptionHandling(Action action)
+        #region Private Methods
+
+        //A good read on storage exceptions:
+        //http://stackoverflow.com/questions/15623306/error-handling-for-windows-azure-storage-migration-from-1-7-to-2-0
+        //and
+        //https://alexandrebrisebois.wordpress.com/2013/07/03/handling-windows-azure-storage-exceptions/
+        /// <summary>
+        /// Tries the perform the Action. If an exception occurs that is not a "409" error, the
+        /// exception will be rethrown. Blob service error codes: https://msdn.microsoft.com/en-au/library/azure/dd179439.aspx
+        /// </summary>
+        /// <param name="action">The Action to perform.</param>
+        private void ExecuteWithExceptionHandling(Action action)
             {
                 try
                 {
